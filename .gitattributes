@@ -1,0 +1,6 @@
+# Bash-Skripte muessen LF-Zeilenenden haben, sonst laufen sie unter Linux/WSL nicht
+*.sh   text eol=lf
+*.conf text eol=lf
+*      text=auto
+*.pcap binary
+*.pcapng binary
