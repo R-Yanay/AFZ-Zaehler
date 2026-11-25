@@ -46,3 +46,7 @@ build/
 infra/mosquitto/data/
 infra/mosquitto/log/
 *.log
+
+### Claude Code (persoenlich) ###
+CLAUDE.local.md
+.claude/settings.local.json

@@ -25,17 +25,25 @@ Ein Backend prüft die Daten auf Plausibilität und überwacht die Verfügbarkei
 # MQTT-Broker starten (Docker Desktop muss laufen)
 docker compose -f infra/docker-compose.yml up -d
 
-# In WSL: Nachrichten mitlesen
+# Nachrichten mitlesen (WSL mit mosquitto-clients, oder ohne Installation über den Container)
 mosquitto_sub -h localhost -t 'afz/#' -v
+docker exec afz-mosquitto mosquitto_sub -t 'afz/#' -v
 
-# In einem zweiten WSL-Fenster: Sensor simulieren
+# In einem zweiten Fenster (WSL oder Git Bash): Sensor simulieren, optional mit QoS
 ./scripts/sensor-sim.sh bus-101 1 10
+MQTT_QOS=1 ./scripts/sensor-sim.sh bus-101 1 10
+
+# MQTT-Verkehr für Wireshark aufzeichnen
+./scripts/mqtt-capture.sh start 03-thema
+./scripts/mqtt-capture.sh stop
 ```
+
+Wireshark-Analysen: [`docs/analysen/`](docs/analysen/README.md)
 
 ## Fortschritt
 
 - [x] Etappe 0: Setup und Projektstruktur
-- [ ] Etappe 1: MQTT-Grundlagen und erste Wireshark-Analyse
+- [x] Etappe 1: MQTT-Grundlagen und erste Wireshark-Analyse
 - [ ] Etappe 2: Spring-Boot-Backend
 - [ ] Etappe 3: TRDP-ähnliches Türsignal
 - [ ] Etappe 4: Gateway-Logik
