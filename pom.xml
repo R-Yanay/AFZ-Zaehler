@@ -16,15 +16,27 @@
         <module>common</module>
         <module>simulator</module>
         <module>gateway</module>
-        <!-- backend (Spring Boot) folgt in Etappe 2 -->
+        <module>backend</module>
     </modules>
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
+        <!-- Parameternamen im Bytecode: braucht Spring fuer @PathVariable und JPQL-Parameter -->
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Aktuelle Surefire-Version fuer JUnit 6 (Spring Boot 4) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.4</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- Stilpruefung: laeuft bei "mvn verify", einzeln mit "mvn checkstyle:check" -->
             <plugin>

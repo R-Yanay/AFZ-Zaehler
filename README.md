@@ -14,7 +14,7 @@ Ein Backend prüft die Daten auf Plausibilität und überwacht die Verfügbarkei
 | `common` | Gemeinsame Datenmodelle |
 | `simulator` | Türsteuerung (UDP) und Zählsensoren (MQTT) |
 | `gateway` | Bordgateway |
-| `backend` | Spring-Boot-Backend (ab Etappe 2) |
+| `backend` | Spring-Boot-Backend: MQTT-Empfang, Plausibilitätsprüfung, REST-API ([Doku](docs/backend.md)) |
 | `scripts` | Bash-Skripte für Simulation, Betrieb und Analyse |
 | `infra` | Docker Compose, Mosquitto-Konfiguration |
 | `docs` | Architektur, Protokolle, Konzepte, Wireshark-Analysen |
@@ -33,6 +33,10 @@ docker exec afz-mosquitto mosquitto_sub -t 'afz/#' -v
 ./scripts/sensor-sim.sh bus-101 1 10
 MQTT_QOS=1 ./scripts/sensor-sim.sh bus-101 1 10
 
+# Backend bauen und starten (Übersicht aller Endpunkte auf http://localhost:8080/)
+mvn -q package
+cd backend && java -jar target/backend-0.1.0-SNAPSHOT.jar
+
 # MQTT-Verkehr für Wireshark aufzeichnen
 ./scripts/mqtt-capture.sh start 03-thema
 ./scripts/mqtt-capture.sh stop
@@ -44,7 +48,7 @@ Wireshark-Analysen: [`docs/analysen/`](docs/analysen/README.md)
 
 - [x] Etappe 0: Setup und Projektstruktur
 - [x] Etappe 1: MQTT-Grundlagen und erste Wireshark-Analyse
-- [ ] Etappe 2: Spring-Boot-Backend
+- [x] Etappe 2: Spring-Boot-Backend
 - [ ] Etappe 3: TRDP-ähnliches Türsignal
 - [ ] Etappe 4: Gateway-Logik
 - [ ] Etappe 5: Qualität und Verfügbarkeit

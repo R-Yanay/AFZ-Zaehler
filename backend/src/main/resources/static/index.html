@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AFZ-Lab Backend</title>
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --card: #ffffff;
+            --text: #1d2430;
+            --muted: #5f6b7a;
+            --border: #dfe3e8;
+            --accent: #1f6feb;
+            --get: #0f7b3f;
+            --ok: #0f7b3f;
+            --warn: #b54708;
+            --down: #b42318;
+            --code-bg: #eef1f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1419;
+                --card: #171d24;
+                --text: #e6e9ee;
+                --muted: #98a2b3;
+                --border: #2a323c;
+                --accent: #58a6ff;
+                --get: #3fb950;
+                --ok: #3fb950;
+                --warn: #f0b429;
+                --down: #f97066;
+                --code-bg: #1f2730;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        main { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+        header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+        h1 { margin: 0 0 4px; font-size: 26px; }
+        h2 { margin: 32px 0 12px; font-size: 18px; }
+        p.lead { margin: 0; color: var(--muted); max-width: 60ch; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            font: 13px/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px;
+            background: var(--card); font-size: 14px; white-space: nowrap;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+        .dot.up { background: var(--ok); }
+        .dot.down { background: var(--down); }
+
+        .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+        .tool {
+            display: block; padding: 14px 16px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+        }
+        .tool:hover { border-color: var(--accent); text-decoration: none; }
+        .tool strong { display: block; color: var(--accent); }
+        .tool span { color: var(--muted); font-size: 13px; }
+
+        .group { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .group + .group { margin-top: 16px; }
+        .group-head { padding: 10px 16px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .group-head small { font-weight: 400; color: var(--muted); margin-left: 8px; }
+        .endpoint { padding: 12px 16px; border-top: 1px solid var(--border); }
+        .endpoint:first-of-type { border-top: 0; }
+        .row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        .method {
+            font: 600 12px ui-monospace, Consolas, monospace; color: var(--get);
+            border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px;
+        }
+        .path { font: 14px ui-monospace, "Cascadia Code", Consolas, monospace; }
+        .summary { color: var(--muted); }
+        .desc { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+        .links { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .links a {
+            font: 13px ui-monospace, Consolas, monospace; padding: 2px 8px;
+            border: 1px solid var(--border); border-radius: 4px;
+        }
+        .links a:hover { border-color: var(--accent); text-decoration: none; }
+        .links .hint { color: var(--muted); font-size: 13px; }
+        form.param { display: inline-flex; gap: 6px; }
+        form.param input {
+            font: 13px ui-monospace, Consolas, monospace; padding: 2px 6px; width: 120px;
+            border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text);
+        }
+        form.param button {
+            font: inherit; font-size: 13px; padding: 2px 10px; cursor: pointer;
+            border: 1px solid var(--accent); border-radius: 4px; background: transparent; color: var(--accent);
+        }
+        .error { color: var(--down); }
+        footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <div>
+            <h1>AFZ-Lab Backend</h1>
+            <p class="lead">Automatische Fahrgastzählung: Zählwerte kommen per MQTT herein, werden auf Plausibilität
+                geprüft und sind hier über die REST-API abrufbar.</p>
+        </div>
+        <a class="status" href="/actuator/health" title="Actuator Health">
+            <span class="dot" id="health-dot"></span><span id="health-text">Status wird geladen …</span>
+        </a>
+    </header>
+
+    <div class="tools">
+        <a class="tool" href="/swagger-ui.html"><strong>Swagger UI</strong><span>Endpunkte interaktiv ausprobieren</span></a>
+        <a class="tool" href="/v3/api-docs"><strong>OpenAPI (JSON)</strong><span>Maschinenlesbare API-Beschreibung</span></a>
+        <a class="tool" href="/v3/api-docs.yaml"><strong>OpenAPI (YAML)</strong><span>Dieselbe Beschreibung als YAML</span></a>
+    </div>
+
+    <h2>Endpunkte</h2>
+    <div id="endpoints"><p class="summary">Wird aus <code>/v3/api-docs</code> geladen …</p></div>
+
+    <footer>Diese Liste wird automatisch aus der OpenAPI-Beschreibung erzeugt und ist daher immer aktuell.
+        Fahrzeuge für Links mit <code>{vehicleId}</code> kommen aus <code>/api/vehicles</code>.</footer>
+</main>
+
+<script>
+    const el = (tag, attrs = {}, ...children) => {
+        const node = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs)) {
+            if (k === "class") node.className = v; else node.setAttribute(k, v);
+        }
+        for (const c of children) node.append(c);
+        return node;
+    };
+
+    async function loadJson(url) {
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(url + ": HTTP " + res.status);
+        return res.json();
+    }
+
+    async function showHealth() {
+        const dot = document.getElementById("health-dot");
+        const text = document.getElementById("health-text");
+        try {
+            const res = await fetch("/actuator/health");
+            const body = await res.json();
+            const up = body.status === "UP";
+            dot.className = "dot " + (up ? "up" : "down");
+            text.textContent = "Status: " + body.status;
+        } catch (e) {
+            dot.className = "dot down";
+            text.textContent = "Status: nicht erreichbar";
+        }
+    }
+
+    // Beispiel-URL: Pfadparameter ersetzen, Query-Parameter mit Default anhaengen
+    function exampleUrl(path, op, values) {
+        let url = path.replace(/\{(\w+)\}/g, (_, name) => encodeURIComponent(values[name] ?? ""));
+        const query = (op.parameters || [])
+            .filter(p => p.in === "query" && p.schema && p.schema.default !== undefined)
+            .map(p => encodeURIComponent(p.name) + "=" + encodeURIComponent(p.schema.default));
+        return query.length ? url + "?" + query.join("&") : url;
+    }
+
+    function endpointLinks(path, op, vehicles) {
+        const links = el("div", { class: "links" });
+        const pathParams = (op.parameters || []).filter(p => p.in === "path");
+
+        if (pathParams.length === 0) {
+            const url = exampleUrl(path, op, {});
+            links.append(el("a", { href: url }, url));
+            return links;
+        }
+
+        // Ein Link pro bekanntem Fahrzeug
+        const onlyVehicle = pathParams.length === 1 && pathParams[0].name === "vehicleId";
+        if (onlyVehicle && vehicles.length) {
+            for (const v of vehicles) {
+                const url = exampleUrl(path, op, { vehicleId: v });
+                links.append(el("a", { href: url }, url));
+            }
+        } else if (onlyVehicle) {
+            links.append(el("span", { class: "hint" }, "Noch keine Fahrzeuge – zuerst Zählwerte senden."));
+        }
+
+        // Freie Eingabe fuer beliebige Pfadparameter
+        const form = el("form", { class: "param" });
+        for (const p of pathParams) {
+            const example = p.example ?? (p.schema && p.schema.example) ?? "";
+            form.append(el("input", { name: p.name, placeholder: p.name, value: example, required: "" }));
+        }
+        form.append(el("button", { type: "submit" }, "Öffnen"));
+        form.addEventListener("submit", ev => {
+            ev.preventDefault();
+            const values = Object.fromEntries(new FormData(form));
+            window.location.href = exampleUrl(path, op, values);
+        });
+        links.append(form);
+        return links;
+    }
+
+    async function showEndpoints() {
+        const target = document.getElementById("endpoints");
+        let spec, vehicles = [];
+        try {
+            spec = await loadJson("/v3/api-docs");
+        } catch (e) {
+            target.replaceChildren(el("p", { class: "error" }, "OpenAPI-Beschreibung nicht ladbar: " + e.message));
+            return;
+        }
+        try {
+            vehicles = await loadJson("/api/vehicles");
+        } catch (e) {
+            // ohne Fahrzeuge geht es trotzdem, dann nur mit Eingabefeld
+        }
+
+        const tagInfo = Object.fromEntries((spec.tags || []).map(t => [t.name, t.description || ""]));
+        const groups = new Map();
+        for (const [path, item] of Object.entries(spec.paths || {}).sort(([a], [b]) => a.localeCompare(b))) {
+            for (const [method, op] of Object.entries(item)) {
+                if (!["get", "post", "put", "patch", "delete"].includes(method)) continue;
+                const tag = (op.tags && op.tags[0]) || "Weitere";
+                if (!groups.has(tag)) groups.set(tag, []);
+                groups.get(tag).push({ path, method, op });
+            }
+        }
+
+        // Eigene Endpunkte zuerst, technische (Actuator) am Schluss
+        const ordered = [...groups].sort(([a], [b]) => (a === "Actuator") - (b === "Actuator") || a.localeCompare(b));
+        const sections = [];
+        for (const [tag, list] of ordered) {
+            const section = el("section", { class: "group" },
+                el("div", { class: "group-head" }, tag, el("small", {}, tagInfo[tag] || "")));
+            for (const { path, method, op } of list) {
+                const row = el("div", { class: "row" },
+                    el("span", { class: "method" }, method.toUpperCase()),
+                    el("span", { class: "path" }, path),
+                    el("span", { class: "summary" }, op.summary || ""));
+                const box = el("div", { class: "endpoint" }, row);
+                if (op.description && op.description !== op.summary) {
+                    box.append(el("p", { class: "desc" }, op.description));
+                }
+                // Nur GET-Endpunkte sind per Link im Browser aufrufbar
+                if (method === "get") box.append(endpointLinks(path, op, vehicles));
+                section.append(box);
+            }
+            sections.push(section);
+        }
+        target.replaceChildren(...sections);
+    }
+
+    showHealth();
+    showEndpoints();
+</script>
+</body>
+</html>

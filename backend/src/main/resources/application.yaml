@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: afz-backend
+  datasource:
+    # Datei-Datenbank, bleibt ueber Neustarts erhalten (Ordner data/ ist gitignored)
+    url: jdbc:h2:file:./data/afz-backend
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update   # Tabellen aus den Entities erzeugen (fuer die Lernumgebung ausreichend)
+    open-in-view: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  show-actuator: true            # Actuator-Endpunkte (health, info) in der OpenAPI-Doku zeigen
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+afz:
+  mqtt:
+    url: tcp://localhost:1883
+    client-id: afz-backend
+    topic: afz/vehicle/+/door/+/count
+    qos: 1
+  plausibility:
+    max-persons-per-door: 50
+    max-future-skew: 1m
+    max-age: 24h
+
+logging:
+  level:
+    ch.afzlab: INFO

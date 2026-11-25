@@ -50,3 +50,6 @@ infra/mosquitto/log/
 ### Claude Code (persoenlich) ###
 CLAUDE.local.md
 .claude/settings.local.json
+
+### Backend (H2-Datenbank) ###
+data/
