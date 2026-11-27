@@ -77,8 +77,9 @@ Ist der Broker beim Start nicht erreichbar, läuft das Backend trotzdem und vers
 
 ## Bekannte Grenzen (spätere Etappen)
 
-- Der Simulator würfelt Ein- und Aussteiger unabhängig. Die Besetzung kann deshalb negativ werden (`plausible=false`).
-  Erst das Gateway (Etappe 4) zählt pro Haltestelle und Türöffnung.
+- `scripts/sensor-sim.sh` würfelt Ein- und Aussteiger unabhängig. Die Besetzung kann deshalb negativ werden
+  (`plausible=false`). Der Java-Simulator aus Etappe 3 hat dieses Problem nicht: Er zählt pro Türöffnung, und an
+  der Endhaltestelle steigen alle aus.
 - Der Broker puffert nur im Arbeitsspeicher: Ein Neustart von Mosquitto verwirft die gepufferten Meldungen. Abhilfe wäre `persistence true` (Etappe 6).
 - Ein Duplikat mit gleichem Zeitstempel, aber anderen Werten wird ebenfalls als Duplikat abgelehnt. Ein Sensor mit
   Sekundenauflösung könnte so eine echte zweite Meldung verlieren. Eine Sequenznummer im Payload wäre robuster.
